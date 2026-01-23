@@ -1,8 +1,8 @@
-# astrbot-plugin-komari-status
+# astrbot_plugin_komari_status
 
 AstrBot 的 Komari 服务器状态监控插件。支持查询节点列表、实时状态、公开设置及版本信息。支持生成精美的状态图片，并允许用户自定义触发指令。
 
-![:astrbot-plugin-komari-status](https://count.getloli.com/@:astrbot-plugin-komari-status?theme=minecraft)
+![:astrbot_plugin_komari_status](https://count.getloli.com/@:astrbot_plugin_komari_status?theme=minecraft)
 
 ## 🛠️ 安装与配置
 
