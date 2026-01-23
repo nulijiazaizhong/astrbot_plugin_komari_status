@@ -1,0 +1,5 @@
+name: astrbot_plugin_komari_status
+version: 1.0.0
+author: Developer
+desc: 查询 Komari 监控面板的服务器信息
+url: https://github.com/komari-monitor/komari

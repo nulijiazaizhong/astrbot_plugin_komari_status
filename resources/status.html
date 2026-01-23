@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: {{ '#0d1117' if dark_theme else '#f0f2f5' }};
+            color: {{ '#c9d1d9' if dark_theme else '#333' }};
+            margin: 0;
+            padding: 20px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .container {
+            background: {{ '#161b22' if dark_theme else 'white' }};
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            border: {{ '1px solid #30363d' if dark_theme else 'none' }};
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid {{ '#30363d' if dark_theme else '#eee' }};
+            padding-bottom: 10px;
+        }
+        .header h1 {
+            margin: 0;
+            color: {{ '#58a6ff' if dark_theme else '#333' }};
+            font-size: 24px;
+        }
+        .node-card {
+            background: {{ '#0d1117' if dark_theme else '#fafafa' }};
+            border: 1px solid {{ '#30363d' if dark_theme else '#e0e0e0' }};
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .node-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .node-name {
+            font-weight: bold;
+            font-size: 18px;
+            color: {{ '#e6edf3' if dark_theme else '#2c3e50' }};
+        }
+        .node-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-up { background: #d4edda; color: #155724; }
+        .status-down { background: #f8d7da; color: #721c24; }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .stat-item {
+            font-size: 14px;
+            color: {{ '#8b949e' if dark_theme else '#555' }};
+        }
+        .footer {
+            margin-top: 10px;
+            text-align: right;
+            font-size: 12px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>服务器状态</h1>
+        </div>
+        {% for node in nodes %}
+        <div class="node-card">
+            <div class="node-header">
+                <span class="node-name">{{ node.region }} {{ node.name }}</span>
+                <span class="node-status status-up">在线</span>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div><b>系统:</b> {{ node.os }}</div>
+                </div>
+                <div class="stat-item">
+                    <div><b>CPU:</b> {{ node.cpu_name }} ({{ node.cpu_cores }} C)</div>
+                </div>
+                <div class="stat-item">
+                    <div><b>内存:</b> {{ (node.mem_total / 1024 / 1024 / 1024) | round(2) }} GB</div>
+                </div>
+                <div class="stat-item">
+                    <div><b>磁盘:</b> {{ (node.disk_total / 1024 / 1024 / 1024) | round(2) }} GB</div>
+                </div>
+                 <div class="stat-item">
+                    <div><b>更新:</b> {{ node.updated_at.replace("T", " ").replace("Z", "") if node.updated_at else "N/A" }}</div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        <div class="footer">
+            Powered by astrbot-plugin-komari-status
+        </div>
+    </div>
+</body>
+</html>

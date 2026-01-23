@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background-color: {{ '#0d1117' if dark_theme else '#f0f2f5' }}; /* 深色背景/浅色背景 */
+            color: {{ '#c9d1d9' if dark_theme else '#333' }};
+            margin: 0;
+            padding: 20px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            {% if not dark_theme %}
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            {% endif %}
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid {{ '#30363d' if dark_theme else '#eee' }};
+            padding-bottom: 15px;
+        }
+        .header h1 {
+            margin: 0;
+            color: {{ '#58a6ff' if dark_theme else '#333' }};
+            font-size: 24px;
+        }
+        .timestamp {
+            font-size: 14px;
+            color: {{ '#8b949e' if dark_theme else '#888' }};
+        }
+        
+        /* 节点卡片 */
+        .node-card {
+            background: {{ '#161b22' if dark_theme else '#fafafa' }};
+            border: 1px solid {{ '#30363d' if dark_theme else '#e0e0e0' }};
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .node-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .node-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .flag {
+            font-size: 20px;
+        }
+        .node-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: {{ '#e6edf3' if dark_theme else '#2c3e50' }};
+        }
+        .node-tags {
+            display: flex;
+            gap: 6px;
+        }
+        .tag {
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: {{ '#21262d' if dark_theme else '#e9ecef' }};
+            color: {{ '#8b949e' if dark_theme else '#555' }};
+            border: 1px solid {{ '#30363d' if dark_theme else '#dee2e6' }};
+        }
+        .tag-group {
+            color: {{ '#79c0ff' if dark_theme else '#0366d6' }};
+            border-color: {{ 'rgba(56, 139, 253, 0.4)' if dark_theme else 'rgba(3, 102, 214, 0.2)' }};
+        }
+        
+        /* 详情网格 */
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            font-size: 13px;
+            color: {{ '#8b949e' if dark_theme else '#555' }};
+            background: {{ '#0d1117' if dark_theme else 'white' }};
+            padding: 10px;
+            border-radius: 4px;
+            {% if not dark_theme %}
+            border: 1px solid #e0e0e0;
+            {% endif %}
+        }
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .detail-label {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-bottom: 2px;
+        }
+        .detail-value {
+            color: {{ '#c9d1d9' if dark_theme else '#333' }};
+            font-family: monospace;
+        }
+        
+        /* 状态条 (模拟) */
+        .status-bar {
+            height: 4px;
+            background: #238636; /* 默认绿色表示在线 */
+            border-radius: 2px;
+            width: 100%;
+            margin-top: 4px;
+        }
+        
+        .footer {
+            margin-top: 20px;
+            text-align: right;
+            font-size: 12px;
+            color: #484f58;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Komari 实时监控</h1>
+            <div class="timestamp">来源: WebSocket 实时接口</div>
+        </div>
+
+        {% for node in nodes %}
+        <div class="node-card">
+            <div class="node-top">
+                <div class="node-info">
+                    <span class="flag">{{ node.region if node.region else '🏳️' }}</span>
+                    <span class="node-name">{{ node.name }}</span>
+                    <div class="node-tags">
+                        {% if node.virtualization %}
+                        <span class="tag">{{ node.virtualization }}</span>
+                        {% endif %}
+                        {% if node.group %}
+                        <span class="tag tag-group">{{ node.group }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div style="font-size: 12px; color: #8b949e;">
+                    {{ node.updated_at.replace("T", " ").replace("Z", "") if node.updated_at else "N/A" }}
+                </div>
+            </div>
+            
+            <div class="status-bar">
+                {% if node.cpu_usage_percent is defined %}
+                    {% if node.cpu_usage_percent > 90 %}
+                        <div style="height: 100%; width: 100%; background: #da3633; border-radius: 2px;"></div>
+                    {% elif node.cpu_usage_percent > 70 %}
+                        <div style="height: 100%; width: 100%; background: #d29922; border-radius: 2px;"></div>
+                    {% else %}
+                        <div style="height: 100%; width: 100%; background: #238636; border-radius: 2px;"></div>
+                    {% endif %}
+                {% else %}
+                    <div style="height: 100%; width: 100%; background: #238636; border-radius: 2px;"></div>
+                {% endif %}
+            </div>
+
+            <div class="details-grid">
+                <div class="detail-item">
+                    <span class="detail-label">CPU</span>
+                    <span class="detail-value">
+                        {% if node.cpu_usage_percent is defined %}
+                            {{ node.cpu_usage_percent }}%
+                        {% else %}
+                            -
+                        {% endif %}
+                        <span style="font-size: 10px; color: #8b949e;">({{ node.cpu_cores }}C)</span>
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">内存</span>
+                    <span class="detail-value">
+                        {% if node.ram_usage_percent is defined %}
+                            {{ node.ram_usage_percent }}%
+                            <span style="font-size: 10px; color: #8b949e;">({{ node.ram_used_gb }}/{{ node.ram_total_gb }}G)</span>
+                        {% else %}
+                            {{ node.mem_total_gb if node.mem_total_gb else '-' }} GB
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">网络</span>
+                    <span class="detail-value">
+                        {% if node.net_down_str or node.net_up_str %}
+                            <span style="color: #4ade80;">↑{{ node.net_up_str }}</span>
+                            <span style="color: #3fb950;">↓{{ node.net_down_str }}</span>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">负载 (1/5/15)</span>
+                    <span class="detail-value">
+                        {% if node.load_1 is defined %}
+                            {{ node.load_1 }} / {{ node.load_5 }} / {{ node.load_15 }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">磁盘</span>
+                    <span class="detail-value">
+                        {% if node.disk_usage_percent is defined %}
+                            {{ node.disk_usage_percent }}%
+                            <span style="font-size: 10px; color: #8b949e;">({{ node.disk_used_gb }}/{{ node.disk_total_gb }}G)</span>
+                        {% else %}
+                            {{ node.disk_total_gb if node.disk_total_gb else '-' }} GB
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">运行时间</span>
+                    <span class="detail-value">
+                        {{ node.uptime_str if node.uptime_str else (node.created_at.split('T')[0] if node.created_at else '-') }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        
+        <div class="footer">
+            Powered by astrbot-plugin-komari-status
+        </div>
+    </div>
+</body>
+</html>
