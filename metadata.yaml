@@ -1,5 +1,5 @@
-name: astrbot_plugin_komari_status
-version: 1.0.0
+name: Komari 监控查询
+version: 1.0.1
 author: nulijiazaizhong
 desc: AstrBot 的 Komari 服务器状态监控插件。支持查询节点列表、实时状态、公开设置及版本信息。支持生成精美的状态图片，并允许用户自定义触发指令。
 repo: https://github.com/nulijiazaizhong/astrbot_plugin_komari_status

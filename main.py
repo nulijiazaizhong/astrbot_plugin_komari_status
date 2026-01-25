@@ -302,8 +302,9 @@ class KomariStatusPlugin(Star):
             # 1. CPU
             if "cpu" in node and isinstance(node["cpu"], dict):
                  cpu_usage = node["cpu"].get("usage", 0)
-                 if cpu_usage:
-                     node["cpu_usage_percent"] = round(cpu_usage * 100, 1)
+                 if cpu_usage is not None:
+                     # User reported that API returns actual percentage value (e.g. 0.375 for 0.375%), so no need to multiply by 100
+                     node["cpu_usage_percent"] = round(float(cpu_usage), 2)
             
             # 2. RAM
             if "ram" in node and isinstance(node["ram"], dict):
