@@ -2,54 +2,142 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body {
-            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
-            background-color: {{ '#0d1117' if dark_theme else '#f0f2f5' }}; /* 深色背景/浅色背景 */
-            color: {{ '#c9d1d9' if dark_theme else '#333' }};
-            margin: 0;
-            padding: 20px;
-            width: 100%;
+        * {
             box-sizing: border-box;
         }
+        
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            {% if dark_theme %}
+            background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+            color: #c9d1d9;
+            {% else %}
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 50%, #f5f7fa 100%);
+            color: #2c3e50;
+            {% endif %}
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
         .container {
-            max-width: 900px;
+            max-width: 1200px;
             margin: 0 auto;
             {% if not dark_theme %}
             background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            {% else %}
+            padding: 30px;
             {% endif %}
         }
+        
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid {{ '#30363d' if dark_theme else '#eee' }};
-            padding-bottom: 15px;
+            margin-bottom: 30px;
+            {% if dark_theme %}
+            border-bottom: 2px solid #30363d;
+            {% else %}
+            border-bottom: 2px solid #e1e8ed;
+            {% endif %}
+            padding-bottom: 20px;
         }
+        
         .header h1 {
             margin: 0;
-            color: {{ '#58a6ff' if dark_theme else '#333' }};
-            font-size: 24px;
+            {% if dark_theme %}
+            color: #58a6ff;
+            {% else %}
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            {% endif %}
+            font-size: 32px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
+        
+        .header h1::before {
+            content: '📊';
+            font-size: 36px;
+        }
+        
         .timestamp {
-            font-size: 14px;
-            color: {{ '#8b949e' if dark_theme else '#888' }};
+            {% if dark_theme %}
+            background: rgba(88, 166, 255, 0.1);
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            color: #58a6ff;
+            {% else %}
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            {% endif %}
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
         }
         
         /* 节点卡片 */
         .node-card {
-            background: {{ '#161b22' if dark_theme else '#fafafa' }};
-            border: 1px solid {{ '#30363d' if dark_theme else '#e0e0e0' }};
-            border-radius: 6px;
-            padding: 16px;
-            margin-bottom: 12px;
+            {% if dark_theme %}
+            background: linear-gradient(145deg, #161b22 0%, #1c2128 100%);
+            border: 1px solid #30363d;
+            {% else %}
+            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid #e2e8f0;
+            {% endif %}
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .node-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            {% if dark_theme %}
+            background: linear-gradient(90deg, #58a6ff, #238636, #58a6ff);
+            background-size: 200% 100%;
+            animation: shimmer 2s linear infinite;
+            {% else %}
+            background: linear-gradient(90deg, #667eea, #764ba2, #667eea);
+            background-size: 200% 100%;
+            animation: shimmer 2s linear infinite;
+            {% endif %}
+        }
+        
+        .node-card:hover {
+            transform: translateY(-2px);
+            {% if dark_theme %}
+            box-shadow: 0 8px 32px rgba(88, 166, 255, 0.15);
+            border-color: #58a6ff;
+            {% else %}
+            box-shadow: 0 12px 48px rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+            {% endif %}
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
         }
         
         .node-top {
@@ -61,75 +149,339 @@
         .node-info {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
+        
         .flag {
-            font-size: 20px;
+            font-size: 24px;
+            animation: pulse 2s ease-in-out infinite;
         }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
         .node-name {
-            font-size: 16px;
-            font-weight: 600;
-            color: {{ '#e6edf3' if dark_theme else '#2c3e50' }};
+            font-size: 18px;
+            font-weight: 700;
+            {% if dark_theme %}
+            color: #e6edf3;
+            {% else %}
+            color: #1a202c;
+            {% endif %}
         }
+        
         .node-tags {
             display: flex;
-            gap: 6px;
+            gap: 8px;
+            margin-left: 8px;
         }
+        
         .tag {
-            font-size: 12px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            background: {{ '#21262d' if dark_theme else '#e9ecef' }};
-            color: {{ '#8b949e' if dark_theme else '#555' }};
-            border: 1px solid {{ '#30363d' if dark_theme else '#dee2e6' }};
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            {% if dark_theme %}
+            background: rgba(35, 134, 54, 0.15);
+            color: #3fb950;
+            border: 1px solid rgba(35, 134, 54, 0.3);
+            {% else %}
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            color: #0284c7;
+            border: 1px solid #bae6fd;
+            {% endif %}
         }
+        
         .tag-group {
-            color: {{ '#79c0ff' if dark_theme else '#0366d6' }};
-            border-color: {{ 'rgba(56, 139, 253, 0.4)' if dark_theme else 'rgba(3, 102, 214, 0.2)' }};
+            {% if dark_theme %}
+            background: rgba(121, 192, 255, 0.15);
+            color: #79c0ff;
+            border-color: rgba(121, 192, 255, 0.3);
+            {% else %}
+            background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+            color: #7c3aed;
+            border-color: #c4b5fd;
+            {% endif %}
+        }
+        
+        /* 状态指示器 */
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            {% if dark_theme %}
+            color: #8b949e;
+            {% else %}
+            color: #64748b;
+            {% endif %}
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #238636;
+            animation: blink 1.5s ease-in-out infinite;
+            box-shadow: 0 0 10px #238636;
+        }
+        
+        .status-dot.warning {
+            background: #d29922;
+            box-shadow: 0 0 10px #d29922;
+        }
+        
+        .status-dot.critical {
+            background: #da3633;
+            box-shadow: 0 0 10px #da3633;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* 进度条区域 */
+        .progress-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .progress-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .progress-label {
+            font-size: 13px;
+            font-weight: 600;
+            {% if dark_theme %}
+            color: #8b949e;
+            {% else %}
+            color: #64748b;
+            {% endif %}
+            width: 50px;
+            flex-shrink: 0;
+        }
+        
+        .progress-bar-container {
+            flex: 1;
+            height: 8px;
+            {% if dark_theme %}
+            background: #0d1117;
+            {% else %}
+            background: #f1f5f9;
+            {% endif %}
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            border-radius: 12px;
+            transition: width 0.5s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: progress-shine 2s infinite;
+        }
+        
+        @keyframes progress-shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .progress-bar.cpu.low { background: linear-gradient(90deg, #238636, #2ea043); }
+        .progress-bar.cpu.medium { background: linear-gradient(90deg, #d29922, #e3b341); }
+        .progress-bar.cpu.high { background: linear-gradient(90deg, #da3633, #f85149); }
+        
+        .progress-bar.ram.low { background: linear-gradient(90deg, #238636, #2ea043); }
+        .progress-bar.ram.medium { background: linear-gradient(90deg, #d29922, #e3b341); }
+        .progress-bar.ram.high { background: linear-gradient(90deg, #da3633, #f85149); }
+        
+        .progress-bar.disk.low { background: linear-gradient(90deg, #238636, #2ea043); }
+        .progress-bar.disk.medium { background: linear-gradient(90deg, #d29922, #e3b341); }
+        .progress-bar.disk.high { background: linear-gradient(90deg, #da3633, #f85149); }
+        
+        .progress-value {
+            font-size: 12px;
+            font-weight: 600;
+            font-family: 'Consolas', monospace;
+            {% if dark_theme %}
+            color: #c9d1d9;
+            {% else %}
+            color: #1e293b;
+            {% endif %}
+            min-width: 60px;
+            text-align: right;
         }
         
         /* 详情网格 */
         .details-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            font-size: 13px;
-            color: {{ '#8b949e' if dark_theme else '#555' }};
-            background: {{ '#0d1117' if dark_theme else 'white' }};
-            padding: 10px;
-            border-radius: 4px;
-            {% if not dark_theme %}
-            border: 1px solid #e0e0e0;
-            {% endif %}
-        }
-        .detail-item {
-            display: flex;
-            flex-direction: column;
-        }
-        .detail-label {
-            font-size: 12px;
-            opacity: 0.7;
-            margin-bottom: 2px;
-        }
-        .detail-value {
-            color: {{ '#c9d1d9' if dark_theme else '#333' }};
-            font-family: monospace;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 12px;
+            margin-top: 8px;
         }
         
-        /* 状态条 (模拟) */
-        .status-bar {
-            height: 4px;
-            background: #238636; /* 默认绿色表示在线 */
-            border-radius: 2px;
-            width: 100%;
-            margin-top: 4px;
+        .detail-item {
+            {% if dark_theme %}
+            background: #0d1117;
+            border: 1px solid #21262d;
+            {% else %}
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            {% endif %}
+            padding: 14px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            transition: all 0.2s ease;
+        }
+        
+        .detail-item:hover {
+            transform: translateY(-2px);
+            {% if dark_theme %}
+            background: #161b22;
+            border-color: #30363d;
+            {% else %}
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            {% endif %}
+        }
+        
+        .detail-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            {% if dark_theme %}
+            color: #6e7681;
+            {% else %}
+            color: #64748b;
+            {% endif %}
+        }
+        
+        .detail-value {
+            font-size: 16px;
+            font-weight: 600;
+            font-family: 'Consolas', monospace;
+            {% if dark_theme %}
+            color: #c9d1d9;
+            {% else %}
+            color: #1e293b;
+            {% endif %}
+        }
+        
+        .detail-sub {
+            font-size: 11px;
+            {% if dark_theme %}
+            color: #6e7681;
+            {% else %}
+            color: #94a3b8;
+            {% endif %}
+        }
+        
+        .network-stats {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            white-space: nowrap;
+        }
+        
+        .network-stat {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        
+        .network-stat.upload {
+            color: #f85149;
+        }
+        
+        .network-stat.download {
+            color: #3fb950;
         }
         
         .footer {
-            margin-top: 20px;
-            text-align: right;
-            font-size: 12px;
+            margin-top: 40px;
+            text-align: center;
+            {% if dark_theme %}
             color: #484f58;
+            {% else %}
+            color: #94a3b8;
+            {% endif %}
+            font-size: 12px;
+            padding: 16px;
+            {% if dark_theme %}
+            background: rgba(13, 17, 23, 0.5);
+            border: 1px solid #21262d;
+            {% else %}
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            {% endif %}
+            border-radius: 12px;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .details-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .header h1::before {
+                font-size: 28px;
+            }
+            
+            .details-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            
+            .node-top {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            
+            .node-info {
+                flex-wrap: wrap;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -155,61 +507,110 @@
                         {% endif %}
                     </div>
                 </div>
-                <div style="font-size: 12px; color: #8b949e;">
-                    {{ node.updated_at.replace("T", " ").replace("Z", "") if node.updated_at else "N/A" }}
+                <div class="status-indicator">
+                    {% if node.cpu_usage_percent is defined %}
+                        {% if node.cpu_usage_percent >= 80 %}
+                            <span class="status-dot critical"></span>
+                            <span>高负载</span>
+                        {% elif node.cpu_usage_percent >= 50 %}
+                            <span class="status-dot warning"></span>
+                            <span>中等负载</span>
+                        {% else %}
+                            <span class="status-dot"></span>
+                            <span>正常运行</span>
+                        {% endif %}
+                    {% else %}
+                        <span class="status-dot"></span>
+                        <span>在线</span>
+                    {% endif %}
                 </div>
             </div>
             
-            <div class="status-bar">
+            <div class="progress-section">
+                <!-- CPU 进度条 -->
                 {% if node.cpu_usage_percent is defined %}
-                    {% if node.cpu_usage_percent > 90 %}
-                        <div style="height: 100%; width: 100%; background: #da3633; border-radius: 2px;"></div>
-                    {% elif node.cpu_usage_percent > 70 %}
-                        <div style="height: 100%; width: 100%; background: #d29922; border-radius: 2px;"></div>
-                    {% else %}
-                        <div style="height: 100%; width: 100%; background: #238636; border-radius: 2px;"></div>
-                    {% endif %}
-                {% else %}
-                    <div style="height: 100%; width: 100%; background: #238636; border-radius: 2px;"></div>
+                <div class="progress-item">
+                    <span class="progress-label">CPU</span>
+                    <div class="progress-bar-container">
+                        {% if node.cpu_usage_percent >= 80 %}
+                            <div class="progress-bar cpu high" style="width: {{ node.cpu_usage_percent }}%;"></div>
+                        {% elif node.cpu_usage_percent >= 50 %}
+                            <div class="progress-bar cpu medium" style="width: {{ node.cpu_usage_percent }}%;"></div>
+                        {% else %}
+                            <div class="progress-bar cpu low" style="width: {{ node.cpu_usage_percent }}%;"></div>
+                        {% endif %}
+                    </div>
+                    <span class="progress-value">{{ node.cpu_usage_percent }}%</span>
+                </div>
+                {% endif %}
+                
+                <!-- 内存进度条 -->
+                {% if node.ram_usage_percent is defined %}
+                <div class="progress-item">
+                    <span class="progress-label">内存</span>
+                    <div class="progress-bar-container">
+                        {% if node.ram_usage_percent >= 80 %}
+                            <div class="progress-bar ram high" style="width: {{ node.ram_usage_percent }}%;"></div>
+                        {% elif node.ram_usage_percent >= 50 %}
+                            <div class="progress-bar ram medium" style="width: {{ node.ram_usage_percent }}%;"></div>
+                        {% else %}
+                            <div class="progress-bar ram low" style="width: {{ node.ram_usage_percent }}%;"></div>
+                        {% endif %}
+                    </div>
+                    <span class="progress-value">{{ node.ram_usage_percent }}%</span>
+                </div>
+                {% endif %}
+                
+                <!-- 磁盘进度条 -->
+                {% if node.disk_usage_percent is defined %}
+                <div class="progress-item">
+                    <span class="progress-label">磁盘</span>
+                    <div class="progress-bar-container">
+                        {% if node.disk_usage_percent >= 80 %}
+                            <div class="progress-bar disk high" style="width: {{ node.disk_usage_percent }}%;"></div>
+                        {% elif node.disk_usage_percent >= 50 %}
+                            <div class="progress-bar disk medium" style="width: {{ node.disk_usage_percent }}%;"></div>
+                        {% else %}
+                            <div class="progress-bar disk low" style="width: {{ node.disk_usage_percent }}%;"></div>
+                        {% endif %}
+                    </div>
+                    <span class="progress-value">{{ node.disk_usage_percent }}%</span>
+                </div>
                 {% endif %}
             </div>
 
             <div class="details-grid">
                 <div class="detail-item">
-                    <span class="detail-label">CPU</span>
-                    <span class="detail-value">
-                        {% if node.cpu_usage_percent is defined %}
-                            {{ node.cpu_usage_percent }}%
-                        {% else %}
-                            -
-                        {% endif %}
-                        <span style="font-size: 10px; color: #8b949e;">({{ node.cpu_cores }}C)</span>
-                    </span>
+                    <span class="detail-label">CPU 核心数</span>
+                    <span class="detail-value">{{ node.cpu_cores if node.cpu_cores else '-' }}C</span>
                 </div>
+                
                 <div class="detail-item">
-                    <span class="detail-label">内存</span>
-                    <span class="detail-value">
-                        {% if node.ram_usage_percent is defined %}
-                            {{ node.ram_usage_percent }}%
-                            <span style="font-size: 10px; color: #8b949e;">({{ node.ram_used_gb }}/{{ node.ram_total_gb }}G)</span>
-                        {% else %}
-                            {{ node.mem_total_gb if node.mem_total_gb else '-' }} GB
-                        {% endif %}
-                    </span>
+                    <span class="detail-label">内存总量</span>
+                    <span class="detail-value">{{ node.ram_total_gb if node.ram_total_gb else (node.mem_total_gb if node.mem_total_gb else '-') }} GB</span>
                 </div>
+                
                 <div class="detail-item">
-                    <span class="detail-label">网络</span>
+                    <span class="detail-label">磁盘总量</span>
+                    <span class="detail-value">{{ node.disk_total_gb if node.disk_total_gb else '-' }} GB</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">网络流量</span>
                     <span class="detail-value">
                         {% if node.net_down_str or node.net_up_str %}
-                            <span style="color: #4ade80;">↑{{ node.net_up_str }}</span>
-                            <span style="color: #3fb950;">↓{{ node.net_down_str }}</span>
+                            <div class="network-stats">
+                                <span class="network-stat upload">↑{{ node.net_up_str }}</span>
+                                <span class="network-stat download">↓{{ node.net_down_str }}</span>
+                            </div>
                         {% else %}
                             -
                         {% endif %}
                     </span>
                 </div>
+                
                 <div class="detail-item">
-                    <span class="detail-label">负载 (1/5/15)</span>
+                    <span class="detail-label">系统负载</span>
                     <span class="detail-value">
                         {% if node.load_1 is defined %}
                             {{ node.load_1 }} / {{ node.load_5 }} / {{ node.load_15 }}
@@ -217,23 +618,13 @@
                             -
                         {% endif %}
                     </span>
+                    <span class="detail-sub">1/5/15 分钟</span>
                 </div>
-                <div class="detail-item">
-                    <span class="detail-label">磁盘</span>
-                    <span class="detail-value">
-                        {% if node.disk_usage_percent is defined %}
-                            {{ node.disk_usage_percent }}%
-                            <span style="font-size: 10px; color: #8b949e;">({{ node.disk_used_gb }}/{{ node.disk_total_gb }}G)</span>
-                        {% else %}
-                            {{ node.disk_total_gb if node.disk_total_gb else '-' }} GB
-                        {% endif %}
-                    </span>
-                </div>
+                
                 <div class="detail-item">
                     <span class="detail-label">运行时间</span>
-                    <span class="detail-value">
-                        {{ node.uptime_str if node.uptime_str else (node.created_at.split('T')[0] if node.created_at else '-') }}
-                    </span>
+                    <span class="detail-value">{{ node.uptime_str if node.uptime_str else (node.created_at.split('T')[0] if node.created_at else '-') }}</span>
+                    <span class="detail-sub">{{ node.updated_at.replace("T", " ").replace("Z", "") if node.updated_at else "N/A" }}</span>
                 </div>
             </div>
         </div>

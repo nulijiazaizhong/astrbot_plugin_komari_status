@@ -1,79 +1,352 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: {{ '#0d1117' if dark_theme else '#f0f2f5' }};
-            color: {{ '#c9d1d9' if dark_theme else '#333' }};
-            margin: 0;
-            padding: 20px;
-            width: 100%;
+        * {
             box-sizing: border-box;
         }
-        .container {
-            background: {{ '#161b22' if dark_theme else 'white' }};
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            {% if dark_theme %}
+            background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+            color: #c9d1d9;
+            {% else %}
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 50%, #f5f7fa 100%);
+            color: #2c3e50;
+            {% endif %}
+            margin: 0;
             padding: 20px;
-            max-width: 800px;
-            margin: 0 auto;
-            border: {{ '1px solid #30363d' if dark_theme else 'none' }};
+            min-height: 100vh;
         }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            {% if not dark_theme %}
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            {% else %}
+            padding: 30px;
+            {% endif %}
+        }
+        
         .header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 2px solid {{ '#30363d' if dark_theme else '#eee' }};
-            padding-bottom: 10px;
+            margin-bottom: 30px;
+            {% if dark_theme %}
+            border-bottom: 2px solid #30363d;
+            {% else %}
+            border-bottom: 2px solid #e1e8ed;
+            {% endif %}
+            padding-bottom: 20px;
         }
+        
         .header h1 {
             margin: 0;
-            color: {{ '#58a6ff' if dark_theme else '#333' }};
-            font-size: 24px;
+            {% if dark_theme %}
+            color: #58a6ff;
+            {% else %}
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            {% endif %}
+            font-size: 32px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
+        
+        .header h1::before {
+            content: '🖥️';
+            font-size: 36px;
+        }
+        
         .node-card {
-            background: {{ '#0d1117' if dark_theme else '#fafafa' }};
-            border: 1px solid {{ '#30363d' if dark_theme else '#e0e0e0' }};
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
+            {% if dark_theme %}
+            background: linear-gradient(145deg, #161b22 0%, #1c2128 100%);
+            border: 1px solid #30363d;
+            {% else %}
+            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid #e2e8f0;
+            {% endif %}
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
+        
+        .node-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            {% if dark_theme %}
+            background: linear-gradient(90deg, #58a6ff, #238636, #58a6ff);
+            background-size: 200% 100%;
+            animation: shimmer 2s linear infinite;
+            {% else %}
+            background: linear-gradient(90deg, #667eea, #764ba2, #667eea);
+            background-size: 200% 100%;
+            animation: shimmer 2s linear infinite;
+            {% endif %}
+        }
+        
+        .node-card:hover {
+            transform: translateY(-2px);
+            {% if dark_theme %}
+            box-shadow: 0 8px 32px rgba(88, 166, 255, 0.15);
+            border-color: #58a6ff;
+            {% else %}
+            box-shadow: 0 12px 48px rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+            {% endif %}
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
         .node-header {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
+            align-items: center;
+            margin-bottom: 20px;
         }
+        
+        .node-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .flag {
+            font-size: 24px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
         .node-name {
-            font-weight: bold;
-            font-size: 18px;
-            color: {{ '#e6edf3' if dark_theme else '#2c3e50' }};
+            font-size: 20px;
+            font-weight: 700;
+            {% if dark_theme %}
+            color: #e6edf3;
+            {% else %}
+            color: #1a202c;
+            {% endif %}
         }
+        
         .node-status {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .status-up { background: #d4edda; color: #155724; }
-        .status-down { background: #f8d7da; color: #721c24; }
+        
+        .node-status.status-up {
+            {% if dark_theme %}
+            background: rgba(35, 134, 54, 0.15);
+            color: #3fb950;
+            border: 1px solid rgba(35, 134, 54, 0.3);
+            {% else %}
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            color: #15803d;
+            border: 1px solid #86efac;
+            {% endif %}
+        }
+        
+        .node-status.status-down {
+            {% if dark_theme %}
+            background: rgba(218, 54, 51, 0.15);
+            color: #f85149;
+            border: 1px solid rgba(218, 54, 51, 0.3);
+            {% else %}
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #dc2626;
+            border: 1px solid #fca5a5;
+            {% endif %}
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: blink 1.5s ease-in-out infinite;
+            box-shadow: 0 0 10px currentColor;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
         
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
         }
+        
         .stat-item {
-            font-size: 14px;
-            color: {{ '#8b949e' if dark_theme else '#555' }};
+            {% if dark_theme %}
+            background: #0d1117;
+            border: 1px solid #21262d;
+            {% else %}
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            {% endif %}
+            padding: 16px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: all 0.2s ease;
         }
+        
+        .stat-item:hover {
+            transform: translateY(-2px);
+            {% if dark_theme %}
+            background: #161b22;
+            border-color: #30363d;
+            {% else %}
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            {% endif %}
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            {% if dark_theme %}
+            color: #6e7681;
+            {% else %}
+            color: #64748b;
+            {% endif %}
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .stat-label::before {
+            content: attr(data-icon);
+            font-size: 16px;
+        }
+        
+        .stat-value {
+            font-size: 16px;
+            font-weight: 600;
+            {% if dark_theme %}
+            color: #c9d1d9;
+            {% else %}
+            color: #1e293b;
+            {% endif %}
+            font-family: 'Consolas', monospace;
+        }
+        
+        .stat-sub {
+            font-size: 11px;
+            {% if dark_theme %}
+            color: #6e7681;
+            {% else %}
+            color: #94a3b8;
+            {% endif %}
+        }
+        
+        .cpu-name {
+            font-size: 14px;
+            font-weight: 500;
+            {% if dark_theme %}
+            color: #8b949e;
+            {% else %}
+            color: #64748b;
+            {% endif %}
+            margin-top: 2px;
+        }
+        
         .footer {
-            margin-top: 10px;
-            text-align: right;
+            margin-top: 40px;
+            text-align: center;
+            {% if dark_theme %}
+            color: #484f58;
+            {% else %}
+            color: #94a3b8;
+            {% endif %}
             font-size: 12px;
-            color: #888;
+            padding: 16px;
+            {% if dark_theme %}
+            background: rgba(13, 17, 23, 0.5);
+            border: 1px solid #21262d;
+            {% else %}
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            {% endif %}
+            border-radius: 12px;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .header h1::before {
+                font-size: 28px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            
+            .node-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            
+            .stat-item {
+                padding: 12px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -82,31 +355,50 @@
         <div class="header">
             <h1>服务器状态</h1>
         </div>
+        
         {% for node in nodes %}
         <div class="node-card">
             <div class="node-header">
-                <span class="node-name">{{ node.region }} {{ node.name }}</span>
-                <span class="node-status status-up">在线</span>
+                <div class="node-info">
+                    <span class="flag">{{ node.region if node.region else '🏳️' }}</span>
+                    <span class="node-name">{{ node.name }}</span>
+                </div>
+                <div class="node-status status-up">
+                    <span class="status-dot"></span>
+                    <span>在线</span>
+                </div>
             </div>
+            
             <div class="stats-grid">
                 <div class="stat-item">
-                    <div><b>系统:</b> {{ node.os }}</div>
+                    <span class="stat-label" data-icon="💻">操作系统</span>
+                    <span class="stat-value">{{ node.os }}</span>
                 </div>
+                
                 <div class="stat-item">
-                    <div><b>CPU:</b> {{ node.cpu_name }} ({{ node.cpu_cores }} C)</div>
+                    <span class="stat-label" data-icon="⚡">CPU</span>
+                    <span class="stat-value">{{ node.cpu_cores }} 核心</span>
+                    <span class="cpu-name">{{ node.cpu_name }}</span>
                 </div>
+                
                 <div class="stat-item">
-                    <div><b>内存:</b> {{ (node.mem_total / 1024 / 1024 / 1024) | round(2) }} GB</div>
+                    <span class="stat-label" data-icon="🧠">内存</span>
+                    <span class="stat-value">{{ (node.mem_total / 1024 / 1024 / 1024) | round(2) }} GB</span>
                 </div>
+                
                 <div class="stat-item">
-                    <div><b>磁盘:</b> {{ (node.disk_total / 1024 / 1024 / 1024) | round(2) }} GB</div>
+                    <span class="stat-label" data-icon="💾">磁盘</span>
+                    <span class="stat-value">{{ (node.disk_total / 1024 / 1024 / 1024) | round(2) }} GB</span>
                 </div>
-                 <div class="stat-item">
-                    <div><b>更新:</b> {{ node.updated_at.replace("T", " ").replace("Z", "") if node.updated_at else "N/A" }}</div>
+                
+                <div class="stat-item">
+                    <span class="stat-label" data-icon="🕐">更新时间</span>
+                    <span class="stat-value">{{ node.updated_at.replace("T", " ").replace("Z", "") if node.updated_at else "N/A" }}</span>
                 </div>
             </div>
         </div>
         {% endfor %}
+        
         <div class="footer">
             Powered by astrbot-plugin-komari-status
         </div>
