@@ -1,5 +1,6 @@
 import logging
 import re
+from datetime import datetime, timezone, timedelta
 from astrbot.api.all import *
 from astrbot.api.event import AstrMessageEvent
 from astrbot.api.event import filter
@@ -106,6 +107,39 @@ class KomariStatusPlugin(Star):
         except Exception as e:
             return None, f"网络错误: {str(e)}"
 
+    async def _get_online_uuids(self):
+        if not self.config.komari_url:
+            return None
+            
+        base_url = self.config.komari_url.rstrip("/")
+        ws_url = base_url.replace("https://", "wss://").replace("http://", "ws://") + "/api/clients"
+        
+        headers = {}
+        if self.config.komari_token:
+            headers["Authorization"] = f"Bearer {self.config.komari_token}"
+            headers["Cookie"] = f"session_token={self.config.komari_token}"
+
+        try:
+            # Short timeout for status check
+            timeout = aiohttp.ClientTimeout(total=3.0)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.ws_connect(ws_url, headers=headers, ssl=False) as ws:
+                    await ws.send_str("get")
+                    msg = await ws.receive()
+                    if msg.type == aiohttp.WSMsgType.TEXT:
+                        resp = json.loads(msg.data)
+                        if isinstance(resp, dict) and resp.get("status") == "success":
+                            raw_data = resp.get("data", {})
+                            # Structure check similar to komari_realtime
+                            if isinstance(raw_data, dict) and "online" in raw_data:
+                                return set(raw_data.get("online", []))
+                            # Fallback: maybe raw_data is list of nodes? Not common for 'get' command but possible in variants
+                            return None
+        except Exception as e:
+            self.logger.warning(f"WS在线检查失败 (将回退到时间判断): {e}")
+            return None
+        return None
+
     @filter.command("komari", alias=["k", "status", "节点"])
     async def komari_nodes(self, event: AstrMessageEvent):
         '''查询 Komari 节点状态'''
@@ -122,6 +156,54 @@ class KomariStatusPlugin(Star):
         if not nodes:
             yield event.plain_result("未找到任何节点。")
             return
+
+        # 获取 WS 在线列表 (可选，用于增强准确性)
+        online_uuids = await self._get_online_uuids()
+        
+        # 处理节点状态
+        now_utc = datetime.now(timezone.utc)
+        tz_cn = timezone(timedelta(hours=8))
+        
+        for node in nodes:
+            is_online = False
+            
+            # 1. WS 判断优先
+            if online_uuids is not None:
+                # 只要 WS 连上了，就以 WS 列表为准
+                if node.get("uuid") in online_uuids or node.get("id") in online_uuids:
+                    is_online = True
+            else:
+                # 2. WS 失败，降级到时间判断
+                updated_at_str = node.get("updated_at")
+                if updated_at_str:
+                    try:
+                        # 格式: 2026-01-23T12:04:33Z 或 2026-01-23T12:04:33.123Z
+                        if updated_at_str.endswith("Z"):
+                             updated_at_str = updated_at_str.replace("Z", "+00:00")
+                        
+                        updated_at = datetime.fromisoformat(updated_at_str)
+                        if updated_at.tzinfo is None:
+                            updated_at = updated_at.replace(tzinfo=timezone.utc)
+                            
+                        diff = now_utc - updated_at
+                        # 120秒无心跳视为离线
+                        if diff.total_seconds() < 120:
+                            is_online = True
+                    except Exception:
+                        pass
+            
+            node["is_online"] = is_online
+            
+            # 格式化更新时间为东八区
+            if node.get("updated_at"):
+                 try:
+                     updated_at_str = node.get("updated_at").replace("Z", "+00:00")
+                     dt = datetime.fromisoformat(updated_at_str)
+                     if dt.tzinfo is None: dt = dt.replace(tzinfo=timezone.utc)
+                     dt_cn = dt.astimezone(tz_cn)
+                     node["updated_at_cn"] = dt_cn.strftime("%Y-%m-%d %H:%M:%S")
+                 except:
+                     node["updated_at_cn"] = node.get("updated_at")
 
         if self.config.image_output:
             yield await self._handle_image_output(event, nodes)
@@ -447,18 +529,20 @@ class KomariStatusPlugin(Star):
             mem_gb = mem / 1024 / 1024 / 1024
             disk_gb = disk / 1024 / 1024 / 1024
             
-            msg.append(f"\n📌 {region} {name}")
+            status_icon = "🟢" if node.get("is_online", False) else "🔴"
+            
+            msg.append(f"\n📌 {status_icon} {region} {name}")
             msg.append(f"   系统: {os_name}")
             msg.append(f"   CPU: {cpu_name} ({cpu_cores} C)")
             msg.append(f"   内存: {mem_gb:.2f} GB")
             msg.append(f"   磁盘: {disk_gb:.2f} GB")
             
             # Updated at
-            updated = node.get("updated_at", "")
+            updated = node.get("updated_at_cn", "")
+            if not updated:
+                 updated = node.get("updated_at", "").replace("T", " ").replace("Z", "")
+            
             if updated:
-                # Simple parsing or just show raw? 
-                # ISO format: "2026-01-23T12:04:33Z"
-                updated = updated.replace("T", " ").replace("Z", "")
                 msg.append(f"   更新: {updated}")
         
         return event.plain_result("\n".join(msg))

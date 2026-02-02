@@ -363,10 +363,17 @@
                     <span class="flag">{{ node.region if node.region else '🏳️' }}</span>
                     <span class="node-name">{{ node.name }}</span>
                 </div>
+                {% if node.is_online %}
                 <div class="node-status status-up">
                     <span class="status-dot"></span>
                     <span>在线</span>
                 </div>
+                {% else %}
+                <div class="node-status status-down">
+                    <span class="status-dot"></span>
+                    <span>离线</span>
+                </div>
+                {% endif %}
             </div>
             
             <div class="stats-grid">
@@ -393,7 +400,7 @@
                 
                 <div class="stat-item">
                     <span class="stat-label" data-icon="🕐">更新时间</span>
-                    <span class="stat-value">{{ node.updated_at.replace("T", " ").replace("Z", "") if node.updated_at else "N/A" }}</span>
+                    <span class="stat-value">{{ node.updated_at_cn if node.updated_at_cn else "N/A" }}</span>
                 </div>
             </div>
         </div>
