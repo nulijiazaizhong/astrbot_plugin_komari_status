@@ -78,12 +78,13 @@
             background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
             border: 1px solid #e2e8f0;
             {% endif %}
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 20px;
+            border-radius: 20px;
+            padding: 28px;
+            margin-bottom: 24px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
         
         .node-card::before {
@@ -124,7 +125,13 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            {% if dark_theme %}
+            border-bottom: 1px solid #21262d;
+            {% else %}
+            border-bottom: 1px solid #f1f5f9;
+            {% endif %}
         }
         
         .node-info {
@@ -157,12 +164,12 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 16px;
-            border-radius: 20px;
+            padding: 10px 18px;
+            border-radius: 24px;
             font-size: 13px;
             font-weight: 600;
-            text-transform: uppercase;
             letter-spacing: 0.5px;
+            white-space: nowrap;
         }
         
         .node-status.status-up {
@@ -205,41 +212,64 @@
         
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 12px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
         }
-        
+
         .stat-item {
             {% if dark_theme %}
-            background: #0d1117;
+            background: linear-gradient(145deg, #0d1117 0%, #111820 100%);
             border: 1px solid #21262d;
             {% else %}
-            background: #f8fafc;
+            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
             border: 1px solid #e2e8f0;
             {% endif %}
-            padding: 16px;
-            border-radius: 12px;
+            padding: 20px;
+            border-radius: 14px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            transition: all 0.2s ease;
+            gap: 8px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
-        
+
+        .stat-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            {% if dark_theme %}
+            background: linear-gradient(180deg, #58a6ff 0%, #238636 100%);
+            {% else %}
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            {% endif %}
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+
         .stat-item:hover {
-            transform: translateY(-2px);
+            transform: translateY(-3px);
             {% if dark_theme %}
             background: #161b22;
             border-color: #30363d;
+            box-shadow: 0 8px 24px rgba(88, 166, 255, 0.1);
             {% else %}
-            background: #f1f5f9;
+            background: #ffffff;
             border-color: #cbd5e1;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.12);
             {% endif %}
         }
-        
+
+        .stat-item:hover::before {
+            opacity: 1;
+        }
+
         .stat-label {
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 600;
-            text-transform: uppercase;
             letter-spacing: 0.5px;
             {% if dark_theme %}
             color: #6e7681;
@@ -248,43 +278,56 @@
             {% endif %}
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
-        
+
         .stat-label::before {
             content: attr(data-icon);
-            font-size: 16px;
+            font-size: 18px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
         }
-        
+
         .stat-value {
-            font-size: 16px;
-            font-weight: 600;
+            font-size: 18px;
+            font-weight: 700;
             {% if dark_theme %}
-            color: #c9d1d9;
+            color: #e6edf3;
             {% else %}
             color: #1e293b;
             {% endif %}
-            font-family: 'Consolas', monospace;
+            font-family: 'Consolas', 'Monaco', monospace;
+            line-height: 1.3;
         }
-        
+
         .stat-sub {
-            font-size: 11px;
-            {% if dark_theme %}
-            color: #6e7681;
-            {% else %}
-            color: #94a3b8;
-            {% endif %}
-        }
-        
-        .cpu-name {
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 500;
             {% if dark_theme %}
             color: #8b949e;
             {% else %}
             color: #64748b;
             {% endif %}
-            margin-top: 2px;
+        }
+
+        .cpu-name {
+            font-size: 13px;
+            font-weight: 500;
+            {% if dark_theme %}
+            color: #8b949e;
+            {% else %}
+            color: #64748b;
+            {% endif %}
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+
+        /* 特殊高亮 - 费用项 */
+        .stat-item:nth-child(5) .stat-value {
+            {% if dark_theme %}
+            color: #3fb950;
+            {% else %}
+            color: #15803d;
+            {% endif %}
         }
         
         .footer {
@@ -308,44 +351,71 @@
         }
         
         /* 响应式设计 */
-        @media (max-width: 1200px) {
+        @media (max-width: 1024px) {
             .stats-grid {
                 grid-template-columns: repeat(3, 1fr);
             }
         }
-        
+
         @media (max-width: 768px) {
-            .container {
-                padding: 16px;
-            }
-            
-            .header h1 {
-                font-size: 24px;
-            }
-            
-            .header h1::before {
-                font-size: 28px;
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
-            }
-            
-            .node-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 12px;
-            }
-            
-            .stat-item {
+            body {
                 padding: 12px;
             }
+
+            .container {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 26px;
+            }
+
+            .header h1::before {
+                font-size: 30px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+
+            .node-header {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .stat-item {
+                padding: 16px;
+            }
+
+            .node-card {
+                padding: 20px;
+            }
+
+            .stat-value {
+                font-size: 16px;
+            }
         }
-        
+
         @media (max-width: 480px) {
             .stats-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .node-name {
+                font-size: 17px;
+            }
+
+            .stat-item {
+                padding: 18px;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .stat-label::before {
+                font-size: 22px;
             }
         }
     </style>
@@ -396,6 +466,51 @@
                 <div class="stat-item">
                     <span class="stat-label" data-icon="💾">磁盘</span>
                     <span class="stat-value">{{ (node.disk_total / 1024 / 1024 / 1024) | round(2) }} GB</span>
+                </div>
+
+                {% if node.price != 0 %}
+                <div class="stat-item">
+                    <span class="stat-label" data-icon="💰">费用</span>
+                    <span class="stat-value">
+                        {% if node.price == -1 %}
+                        免费
+                        {% else %}
+                        {{ node.currency }}{{ node.price }}
+                        <span class="stat-sub">/ 
+                            {% if node.billing_cycle == 365 %}年
+                            {% elif node.billing_cycle == 30 %}月
+                            {% elif node.billing_cycle == 90 %}季
+                            {% elif node.billing_cycle == 180 %}半年
+                            {% elif node.billing_cycle == 730 %}两年
+                            {% elif node.billing_cycle == 1095 %}三年
+                            {% elif node.billing_cycle == 1825 %}五年
+                            {% elif node.billing_cycle == -1 %}一次性
+                            {% else %}{{ node.billing_cycle }}天
+                            {% endif %}
+                        </span>
+                        {% endif %}
+                    </span>
+                </div>
+                {% endif %}
+
+                <div class="stat-item">
+                    <span class="stat-label" data-icon="📊">流量</span>
+                    <span class="stat-value">
+                        {% if node.traffic_limit == 0 %}
+                        无限制
+                        {% else %}
+                        {{ (node.traffic_limit / 1024 / 1024 / 1024) | round(2) }} GB
+                        <span class="stat-sub">
+                            {% if node.traffic_limit_type == 'max' %}双向
+                            {% elif node.traffic_limit_type == 'min' %}单向
+                            {% elif node.traffic_limit_type == 'sum' %}总和
+                            {% elif node.traffic_limit_type == 'up' %}上行
+                            {% elif node.traffic_limit_type == 'down' %}下行
+                            {% else %}{{ node.traffic_limit_type }}
+                            {% endif %}
+                        </span>
+                        {% endif %}
+                    </span>
                 </div>
                 
                 <div class="stat-item">
