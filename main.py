@@ -166,31 +166,36 @@ class KomariStatusPlugin(Star):
         
         for node in nodes:
             is_online = False
+            is_ws_online = False
+            is_time_online = False
             
-            # 1. WS 判断优先
+            # 1. WS 验证
             if online_uuids is not None:
-                # 只要 WS 连上了，就以 WS 列表为准
                 if node.get("uuid") in online_uuids or node.get("id") in online_uuids:
-                    is_online = True
-            else:
-                # 2. WS 失败，降级到时间判断
-                updated_at_str = node.get("updated_at")
-                if updated_at_str:
-                    try:
-                        # 格式: 2026-01-23T12:04:33Z 或 2026-01-23T12:04:33.123Z
-                        if updated_at_str.endswith("Z"):
-                             updated_at_str = updated_at_str.replace("Z", "+00:00")
+                    is_ws_online = True
+            
+            # 2. 时间判断 (10分钟 = 600秒)
+            updated_at_str = node.get("updated_at")
+            if updated_at_str:
+                try:
+                    # 格式: 2026-01-23T12:04:33Z 或 2026-01-23T12:04:33.123Z
+                    if updated_at_str.endswith("Z"):
+                            updated_at_str = updated_at_str.replace("Z", "+00:00")
+                    
+                    updated_at = datetime.fromisoformat(updated_at_str)
+                    if updated_at.tzinfo is None:
+                        updated_at = updated_at.replace(tzinfo=timezone.utc)
                         
-                        updated_at = datetime.fromisoformat(updated_at_str)
-                        if updated_at.tzinfo is None:
-                            updated_at = updated_at.replace(tzinfo=timezone.utc)
-                            
-                        diff = now_utc - updated_at
-                        # 120秒无心跳视为离线
-                        if diff.total_seconds() < 120:
-                            is_online = True
-                    except Exception:
-                        pass
+                    diff = now_utc - updated_at
+                    # 600秒(10分钟)无心跳视为离线
+                    if diff.total_seconds() < 600:
+                        is_time_online = True
+                except Exception:
+                    pass
+            
+            # 只要满足 WS 在线 或 时间在范围内，即视为在线
+            if is_ws_online or is_time_online:
+                is_online = True
             
             node["is_online"] = is_online
             
